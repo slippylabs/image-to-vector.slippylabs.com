@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image to Vector Converter // image-to-vector.slippylabs.com</title>
+<meta name="description" content="Trace a PNG, JPEG or BMP into real scalable geometry and download it as SVG, EPS or DXF. Contour tracing, colour quantisation and Bezier fitting, all in your browser.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://image-to-vector.slippylabs.com/">
+<meta property="og:title" content="Image to Vector Converter // image-to-vector.slippylabs.com">
+<meta property="og:description" content="Trace a PNG, JPEG or BMP into real scalable geometry and download it as SVG, EPS or DXF. Contour tracing, colour quantisation and Bezier fitting, all in your browser.">
+<meta property="og:image" content="https://image-to-vector.slippylabs.com/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Image to Vector Converter // image-to-vector.slippylabs.com">
+<meta name="twitter:description" content="Trace a PNG, JPEG or BMP into real scalable geometry and download it as SVG, EPS or DXF. Contour tracing, colour quantisation and Bezier fitting, all in your browser.">
+<meta name="twitter:image" content="https://image-to-vector.slippylabs.com/og-image.png">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2234%22%20r%3D%2222%22%20fill%3D%22%231c8a52%22%20stroke%3D%22%2339ff8f%22%20stroke-width%3D%222%22%2F%3E%3Ccircle%20cx%3D%2220%22%20cy%3D%2216%22%20r%3D%228%22%20fill%3D%22%231c8a52%22%20stroke%3D%22%2339ff8f%22%20stroke-width%3D%222%22%2F%3E%3Ccircle%20cx%3D%2244%22%20cy%3D%2216%22%20r%3D%228%22%20fill%3D%22%231c8a52%22%20stroke%3D%22%2339ff8f%22%20stroke-width%3D%222%22%2F%3E%3C%2Fsvg%3E">
+<meta name="theme-color" content="#050b10">
+<link rel="stylesheet" href="style.css?v=1">
+</head>
+<body>
+
+<div class="starfield"></div>
+<div class="scanlines"></div>
+
+<main class="page-wrap">
+  <div class="hud-panel xwide">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="callsign-row">
+      <div class="toad-avatar-wrap">
+        <svg class="toad-avatar" width="46" height="46" viewBox="0 0 64 64">
+          <circle cx="32" cy="34" r="22" fill="#1c8a52" stroke="#39ff8f" stroke-width="2"/>
+          <circle cx="20" cy="16" r="8" fill="#1c8a52" stroke="#39ff8f" stroke-width="2"/>
+          <circle cx="44" cy="16" r="8" fill="#1c8a52" stroke="#39ff8f" stroke-width="2"/>
+          <circle cx="20" cy="16" r="3.5" fill="#050b10"/>
+          <circle cx="44" cy="16" r="3.5" fill="#050b10"/>
+          <ellipse cx="24" cy="32" rx="4.5" ry="5.5" fill="#050b10"/>
+          <ellipse cx="40" cy="32" rx="4.5" ry="5.5" fill="#050b10"/>
+          <circle cx="24" cy="30" r="1.4" fill="#39ff8f"/>
+          <circle cx="40" cy="30" r="1.4" fill="#39ff8f"/>
+          <path d="M22 42 Q32 48 42 42" stroke="#050b10" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+        <div class="lock-reticle"></div>
+      </div>
+      <span class="callsign">Workshop Division // Tool</span>
+      <div class="nav-links">
+        <a href="https://projects.slippylabs.com/" class="logout-link">&larr; Archive</a>
+      </div>
+    </div>
+
+    <h1>IMAGE TO VECTOR</h1>
+    <p class="subtitle">Trace a PNG, JPEG or BMP into real scalable geometry and download it as SVG, EPS or DXF. Your image never leaves the browser &mdash; the contour tracer, the colour quantiser and the curve fitter all run on this page.</p>
+
+    <div class="tool-controls">
+      <input class="tool-file-input" id="img-input" type="file" accept="image/*">
+      <button class="tool-btn ghost" id="pattern-btn">Use Test Pattern</button>
+    </div>
+
+    <div class="filter-bar" id="mode-tabs">
+      <button class="hud-tab" data-mode="bw">Black &amp; White</button>
+      <button class="hud-tab" data-mode="gray">Grayscale</button>
+      <button class="hud-tab active" data-mode="colour">Colour</button>
+    </div>
+
+    <!-- ---------- per-mode controls ---------- -->
+    <div id="panel-bw" class="hidden">
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="threshold">Threshold &mdash; anything darker than this becomes ink</label>
+        <div class="tool-slider-row">
+          <input type="range" id="threshold" min="1" max="254" value="128">
+          <span class="tool-slider-value" id="threshold-val">128</span>
+        </div>
+      </div>
+      <div class="tool-controls">
+        <label class="tool-check"><input type="checkbox" id="invert"> Invert</label>
+        <label class="tool-field-label" for="ink">Ink colour</label>
+        <input class="tool-color-input" id="ink" type="color" value="#000000">
+      </div>
+    </div>
+
+    <div id="panel-gray" class="hidden">
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="levels">Grey levels</label>
+        <div class="tool-slider-row">
+          <input type="range" id="levels" min="2" max="8" value="4">
+          <span class="tool-slider-value" id="levels-val">4</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="panel-colour">
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="colors">Colours</label>
+        <div class="tool-slider-row">
+          <input type="range" id="colors" min="2" max="32" value="8">
+          <span class="tool-slider-value" id="colors-val">8</span>
+        </div>
+      </div>
+      <div class="tool-controls">
+        <label class="tool-check"><input type="checkbox" id="drop-bg"> Drop the background layer</label>
+      </div>
+    </div>
+
+    <!-- ---------- shared tracing controls ---------- -->
+    <div class="two-col">
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="turd">Suppress speckles &mdash; ignore blobs under <span id="turd-val">4</span> px</label>
+        <div class="tool-slider-row"><input type="range" id="turd" min="0" max="60" value="4"></div>
+      </div>
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="simplify">Simplify &mdash; <span id="simplify-val">0.8</span> px</label>
+        <div class="tool-slider-row"><input type="range" id="simplify" min="0" max="30" value="8"></div>
+      </div>
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="smooth">Smoothing &mdash; <span id="smooth-val">1.0</span> px (0 keeps straight polygons)</label>
+        <div class="tool-slider-row"><input type="range" id="smooth" min="0" max="40" value="10"></div>
+      </div>
+      <div class="tool-field-row">
+        <label class="tool-field-label" for="corner">Corner threshold &mdash; turns sharper than <span id="corner-val">60</span>&deg; stay sharp</label>
+        <div class="tool-slider-row"><input type="range" id="corner" min="15" max="150" value="60"></div>
+      </div>
+    </div>
+
+    <div class="tool-controls">
+      <label class="tool-field-label" for="maxsize">Trace at most</label>
+      <select class="tool-select" id="maxsize">
+        <option value="400">400 px</option>
+        <option value="800">800 px</option>
+        <option value="1000" selected>1000 px</option>
+        <option value="1600">1600 px</option>
+        <option value="0">Full size</option>
+      </select>
+      <label class="tool-check"><input type="checkbox" id="white-bg"> White background in output</label>
+    </div>
+
+    <!-- ---------- previews ---------- -->
+    <div class="tool-field-row">
+      <label class="tool-field-label" for="zoom">Zoom &mdash; <span id="zoom-val">1</span>&times; &nbsp;(the pixels break up, the curves do not)</label>
+      <div class="tool-slider-row"><input type="range" id="zoom" min="10" max="120" value="10"></div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="pane-label">Source raster</div>
+        <div class="trace-pane" id="pane-src"><canvas id="src-canvas"></canvas></div>
+      </div>
+      <div>
+        <div class="pane-label">Traced vector</div>
+        <div class="trace-pane" id="pane-out"><img id="out-img" alt="traced result"></div>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-tile"><span class="stat-value" id="stat-paths">&mdash;</span><span class="stat-label">Paths</span></div>
+      <div class="stat-tile"><span class="stat-value" id="stat-nodes">&mdash;</span><span class="stat-label">Curve Nodes</span></div>
+      <div class="stat-tile"><span class="stat-value" id="stat-layers">&mdash;</span><span class="stat-label">Colour Layers</span></div>
+      <div class="stat-tile"><span class="stat-value" id="stat-size">&mdash;</span><span class="stat-label">SVG Size</span></div>
+      <div class="stat-tile"><span class="stat-value" id="stat-ms">&mdash;</span><span class="stat-label">Trace Time</span></div>
+    </div>
+
+    <p class="tool-output" id="status-line" style="min-height:auto">Load an image or press Use Test Pattern.</p>
+
+    <!-- ---------- export ---------- -->
+    <div class="tool-controls">
+      <button class="tool-btn" id="svg-btn">Download SVG</button>
+      <button class="tool-btn" id="eps-btn">Download EPS</button>
+      <button class="tool-btn" id="dxf-btn">Download DXF</button>
+      <button class="tool-btn ghost" id="copy-btn">Copy SVG</button>
+    </div>
+
+    <div class="tool-controls">
+      <label class="tool-check"><input type="checkbox" id="dxf-splines"> DXF: write true splines instead of polylines</label>
+      <label class="tool-field-label" for="flatten">Polyline accuracy &mdash; <span id="flatten-val">0.20</span> px</label>
+      <div class="tool-slider-row" style="min-width:180px"><input type="range" id="flatten" min="2" max="100" value="20"></div>
+    </div>
+
+    <div class="tool-field-row">
+      <label class="tool-field-label" for="svg-src">SVG source</label>
+      <textarea class="tool-textarea" id="svg-src" readonly spellcheck="false"></textarea>
+    </div>
+
+    <p class="tool-note">Tracing walks the <em>cracks between</em> pixels rather than the pixels themselves, so every contour lands on the integer grid and two colours that share a border share the exact same edge &mdash; that is why the colour output has no hairline seams between regions. Outlines are simplified with Ramer&ndash;Douglas&ndash;Peucker, then fitted with cubic B&eacute;ziers by Schneider's algorithm; anything that turns sharper than the corner threshold is kept as a hard corner instead of being rounded off. <strong>EPS and DXF both put their origin at the bottom-left</strong> while images count rows downward, so both exports are mirrored on the way out &mdash; the kind of detail that produces a file which opens perfectly and is upside down. DXF is written as R2000 with one layer per colour; polylines import into anything, splines keep the curves exact but some budget laser software ignores them.</p>
+
+    <div class="comm-window">
+      <div class="comm-portrait">
+        <svg width="36" height="36" viewBox="0 0 64 64">
+          <circle cx="32" cy="34" r="22" fill="#1c8a52" stroke="#39ff8f" stroke-width="2"/>
+          <circle cx="20" cy="16" r="8" fill="#1c8a52" stroke="#39ff8f" stroke-width="2"/>
+          <circle cx="44" cy="16" r="8" fill="#1c8a52" stroke="#39ff8f" stroke-width="2"/>
+          <circle cx="20" cy="16" r="3.5" fill="#050b10"/>
+          <circle cx="44" cy="16" r="3.5" fill="#050b10"/>
+          <ellipse cx="24" cy="32" rx="4.5" ry="5.5" fill="#050b10"/>
+          <ellipse cx="40" cy="32" rx="4.5" ry="5.5" fill="#050b10"/>
+          <circle cx="24" cy="30" r="1.4" fill="#39ff8f"/>
+          <circle cx="40" cy="30" r="1.4" fill="#39ff8f"/>
+          <path d="M22 42 Q32 48 42 42" stroke="#050b10" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="comm-body">
+        <div class="comm-label"><span class="dot"></span> Incoming Transmission &mdash; Slippy</div>
+        <p>"A pixel knows where it is. A curve knows where it is going."</p>
+      </div>
+    </div>
+
+    <a href="https://projects.slippylabs.com/" class="hud-btn">&larr; Back to Archive</a>
+  </div>
+</main>
+
+<!-- The tracer. Held as plain text so it can be handed to a Worker verbatim,
+     which keeps a heavy colour trace off the UI thread. -->
+<script id="vectorize-src" type="text/plain">
+/* ==========================================================================
+   vectorize.js — raster to vector tracer.
+
+   No DOM dependencies: takes {width, height, data:RGBA} in, gives geometry
+   and SVG / EPS / DXF text out. Runs identically in the page and under Node,
+   which is what lets the oracle suite test the code that actually ships.
+   ========================================================================== */
+(function (root) {
+'use strict';
+
+/* ---------- small helpers ---------- */
+
+function luma(r, g, b) { return 0.2126 * r + 0.7152 * g + 0.0722 * b; }
+
+// Trim coordinates to 2dp and drop trailing zeros. Cuts output size by
+// roughly a third versus printing raw floats, with no visible difference.
+function n(v) {
+  const s = (Math.round(v * 100) / 100).toFixed(2);
+  return s.replace(/\.?0+$/, '') || '0';
+}
+
+function hex2(v) { return v.toString(16).padStart(2, '0'); }
+function toHex(c) { return '#' + hex2(c[0]) + hex2(c[1]) + hex2(c[2]); }
+
+/* ==========================================================================
+   1. Quantisation — turn RGBA pixels into a palette plus a per-pixel index.
+
+   index[p] is the palette slot for pixel p, or -1 for transparent. The
+   palette is sorted by descending pixel count, which matters for step 2.
+   ========================================================================== */
+
+// 5 bits per channel. 32768 buckets is enough resolution for tracing and
+// keeps the histogram small enough to scan repeatedly during the split.
+function histKey(r, g, b) {
+  return ((r >> 3) << 10) | ((g >> 3) << 5) | (b >> 3);
+}
+
+function medianCut(img, maxColors, alphaCutoff) {
+  const d = img.data;
+  const hist = new Uint32Array(32768);
+  const sumR = new Float64Array(32768);
+  const sumG = new Float64Array(32768);
+  const sumB = new Float64Array(32768);
+
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < alphaCutoff) continue;
+    const k = histKey(d[i], d[i + 1], d[i + 2]);
+    hist[k]++;
+    sumR[k] += d[i];
+    sumG[k] += d[i + 1];
+    sumB[k] += d[i + 2];
+  }
+
+  const used = [];
+  for (let k = 0; k < 32768; k++) if (hist[k]) used.push(k);
+  if (!used.length) return { palette: [], lut: null };
+
+  // A box is a slice [lo,hi) of `used`, kept sorted along whichever axis we
+  // last split it on.
+  const boxes = [{ lo: 0, hi: used.length }];
+
+  function boxStats(box) {
+    let rmin = 255, rmax = 0, gmin = 255, gmax = 0, bmin = 255, bmax = 0, count = 0;
+    for (let i = box.lo; i < box.hi; i++) {
+      const k = used[i];
+      const r = (k >> 10) & 31, g = (k >> 5) & 31, b = k & 31;
+      if (r < rmin) rmin = r; if (r > rmax) rmax = r;
+      if (g < gmin) gmin = g; if (g > gmax) gmax = g;
+      if (b < bmin) bmin = b; if (b > bmax) bmax = b;
+      count += hist[k];
+    }
+    // Weight the ranges the way the eye does, so a green spread is judged
+    // wider than an equal blue one and gets split first.
+    const dr = (rmax - rmin) * 0.2126, dg = (gmax - gmin) * 0.7152, db = (bmax - bmin) * 0.0722;
+    let axis = 0, span = dr;
+    if (dg > span) { axis = 1; span = dg; }
+    if (db > span) { axis = 2; span = db; }
+    return { axis, span, count };
+  }
+
+  while (boxes.length < maxColors) {
+    let best = -1, bestScore = 0;
+    for (let i = 0; i < boxes.length; i++) {
+      const b = boxes[i];
+      if (b.hi - b.lo < 2) continue;
+      const st = boxStats(b);
+      if (st.span <= 0) continue;
+      const score = st.span * Math.cbrt(st.count);
+      if (score > bestScore) { bestScore = score; best = i; b._st = st; }
+    }
+    if (best < 0) break;
+
+    const box = boxes[best];
+    const axis = box._st.axis;
+    const shift = axis === 0 ? 10 : axis === 1 ? 5 : 0;
+    const slice = used.slice(box.lo, box.hi);
+    slice.sort((a, b) => ((a >> shift) & 31) - ((b >> shift) & 31));
+    for (let i = 0; i < slice.length; i++) used[box.lo + i] = slice[i];
+
+    // Split at the population median, not the midpoint of the slice — that
+    // is the whole point of median cut over a uniform subdivision.
+    const half = box._st.count / 2;
+    let acc = 0, cut = box.lo;
+    for (let i = box.lo; i < box.hi - 1; i++) {
+      acc += hist[used[i]];
+      cut = i + 1;
+      if (acc >= half) break;
+    }
+    boxes.splice(best, 1, { lo: box.lo, hi: cut }, { lo: cut, hi: box.hi });
+  }
+
+  // Representative colour = population-weighted mean of the box, which sits
+  // closer to the dominant tone than the geometric centre would.
+  const palette = [];
+  for (const box of boxes) {
+    let r = 0, g = 0, b = 0, count = 0;
+    for (let i = box.lo; i < box.hi; i++) {
+      const k = used[i];
+      r += sumR[k]; g += sumG[k]; b += sumB[k]; count += hist[k];
+    }
+    if (!count) continue;
+    palette.push({
+      color: [Math.round(r / count), Math.round(g / count), Math.round(b / count)],
+      count: count,
+    });
+  }
+  palette.sort((a, b) => b.count - a.count);
+
+  // Map every occupied histogram bucket to its nearest palette entry once,
+  // then the per-pixel pass is a single table lookup instead of a search.
+  const lut = new Int16Array(32768).fill(-1);
+  for (const k of used) {
+    const r = (((k >> 10) & 31) << 3) | 4;
+    const g = (((k >> 5) & 31) << 3) | 4;
+    const b = ((k & 31) << 3) | 4;
+    let bestI = 0, bestD = Infinity;
+    for (let i = 0; i < palette.length; i++) {
+      const c = palette[i].color;
+      const dr = r - c[0], dg = g - c[1], db = b - c[2];
+      const dist = 0.2126 * dr * dr + 0.7152 * dg * dg + 0.0722 * db * db;
+      if (dist < bestD) { bestD = dist; bestI = i; }
+    }
+    lut[k] = bestI;
+  }
+  return { palette: palette.map(p => p.color), lut: lut };
+}
+
+/* Build {palette, index} for whichever mode the user picked. */
+function segment(img, opts) {
+  const w = img.width, h = img.height, d = img.data;
+  const px = w * h;
+  const index = new Int16Array(px).fill(-1);
+  const alphaCutoff = 128;
+
+  if (opts.mode === 'bw') {
+    const t = opts.threshold;
+    for (let p = 0, i = 0; p < px; p++, i += 4) {
+      if (d[i + 3] < alphaCutoff) continue;
+      const dark = luma(d[i], d[i + 1], d[i + 2]) < t;
+      if (dark !== !!opts.invert) index[p] = 0;
+    }
+    return { palette: [opts.inkColor || [0, 0, 0]], index: index, cumulative: false };
+  }
+
+  if (opts.mode === 'gray') {
+    const levels = Math.max(2, Math.min(8, opts.levels));
+    const counts = new Uint32Array(levels);
+    const raw = new Int16Array(px).fill(-1);
+    for (let p = 0, i = 0; p < px; p++, i += 4) {
+      if (d[i + 3] < alphaCutoff) continue;
+      let q = Math.floor(luma(d[i], d[i + 1], d[i + 2]) / 256 * levels);
+      if (q >= levels) q = levels - 1;
+      raw[p] = q;
+      counts[q]++;
+    }
+    // Order by population so the dominant tone becomes the base layer.
+    const order = Array.from({ length: levels }, (_, i) => i)
+      .sort((a, b) => counts[b] - counts[a]);
+    const slot = new Int16Array(levels);
+    order.forEach((lvl, i) => { slot[lvl] = i; });
+    for (let p = 0; p < px; p++) if (raw[p] >= 0) index[p] = slot[raw[p]];
+    const palette = order.map(lvl => {
+      const v = Math.round((lvl + 0.5) / levels * 255);
+      return [v, v, v];
+    });
+    return { palette: palette, index: index, cumulative: true };
+  }
+
+  // colour
+  const q = medianCut(img, Math.max(2, Math.min(64, opts.colors)), alphaCutoff);
+  if (!q.palette.length) return { palette: [], index: index, cumulative: true };
+  for (let p = 0, i = 0; p < px; p++, i += 4) {
+    if (d[i + 3] < alphaCutoff) continue;
+    index[p] = q.lut[histKey(d[i], d[i + 1], d[i + 2])];
+  }
+  return { palette: q.palette, index: index, cumulative: true };
+}
+
+/* ==========================================================================
+   2. Contour extraction — crack following.
+
+   The walk runs along the *edges* between pixels, never through their
+   centres, so every vertex lands on an integer lattice point. Two layers
+   that share a border therefore emit the exact same coordinates and the
+   rasteriser leaves no hairline seam between them.
+
+   Layers are cumulative: layer i is the set of pixels whose palette index is
+   >= i, drawn in order. The visible colour at any pixel is then the palette
+   entry of the highest layer covering it, which is its own colour by
+   construction — exact, and with no gaps between neighbouring regions.
+   ========================================================================== */
+
+// N, E, S, W — clockwise on screen, so (dir+1)&3 is a right turn.
+const DX = [0, 1, 0, -1];
+const DY = [-1, 0, 1, 0];
+
+function traceMask(inside, w, h, turdSize) {
+  const vw = w + 1;
+  // One nibble per lattice vertex: which directions leave it along a border.
+  const out = new Uint8Array(vw * (h + 1));
+
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      if (!inside(x, y)) continue;
+      // Each border edge is directed so the filled pixel is on its left.
+      if (y === 0     || !inside(x, y - 1)) out[y * vw + (x + 1)]       |= 8; // W
+      if (x === 0     || !inside(x - 1, y)) out[y * vw + x]             |= 4; // S
+      if (y === h - 1 || !inside(x, y + 1)) out[(y + 1) * vw + x]       |= 2; // E
+      if (x === w - 1 || !inside(x + 1, y)) out[(y + 1) * vw + (x + 1)] |= 1; // N
+    }
+  }
+
+  // A vertex has two exits only where two filled pixels meet corner to
+  // corner. Turning right there keeps diagonally touching pixels in one
+  // contour (8-connected foreground); turning left would split them.
+  function pickNext(vi, dir) {
+    const bits = out[vi];
+    const right = (dir + 1) & 3;
+    if (bits & (1 << right)) return right;
+    if (bits & (1 << dir)) return dir;
+    const left = (dir + 3) & 3;
+    if (bits & (1 << left)) return left;
+    return -1;
+  }
+
+  const contours = [];
+  for (let vy = 0; vy <= h; vy++) {
+    for (let vx = 0; vx <= w; vx++) {
+      const start = vy * vw + vx;
+      for (let d0 = 0; d0 < 4; d0++) {
+        if (!(out[start] & (1 << d0))) continue;
+
+        const pts = [];
+        let x = vx, y = vy, dir = d0, prevDir = -1;
+        for (;;) {
+          // Only record a vertex where the walk actually turns; a straight
+          // run of 200 lattice points is two points, not two hundred.
+          if (dir !== prevDir) pts.push(x, y);
+          prevDir = dir;
+          out[y * vw + x] &= ~(1 << dir);
+          x += DX[dir]; y += DY[dir];
+          if (x === vx && y === vy) break;
+          const nd = pickNext(y * vw + x, dir);
+          if (nd < 0) break;
+          dir = nd;
+        }
+        if (pts.length < 6) continue;
+
+        // Shoelace. Sign records winding; magnitude is the enclosed area,
+        // which is what the speckle filter thresholds on.
+        let a2 = 0;
+        for (let i = 0, len = pts.length; i < len; i += 2) {
+          const j = (i + 2) % len;
+          a2 += pts[i] * pts[j + 1] - pts[j] * pts[i + 1];
+        }
+        const area = a2 / 2;
+        if (Math.abs(area) < turdSize) continue;
+        contours.push({ pts: pts, area: area });
+      }
+    }
+  }
+  return contours;
+}
+
+/* ==========================================================================
+   3. Simplify — Ramer–Douglas–Peucker, then corner detection.
+   ========================================================================== */
+
+/* Put a point every `step` along the contour.
+
+   The tracer records a vertex only where the walk turns, so a 200px straight
+   edge arrives as two points. That is fine for storage and wrong for fitting:
+   the curve fitter is only ever pinned at the points it is given, so across a
+   long bare edge it is free to bow far outside the shape and still report
+   itself inside tolerance. The inserted points sit exactly on the original
+   segments, so this adds constraints without moving the outline. */
+function densify(pts, step) {
+  const count = pts.length / 2;
+  const out = [];
+  for (let i = 0; i < count; i++) {
+    const j = (i + 1) % count;
+    const ax = pts[i * 2], ay = pts[i * 2 + 1];
+    const bx = pts[j * 2], by = pts[j * 2 + 1];
+    out.push(ax, ay);
+    const parts = Math.floor(Math.hypot(bx - ax, by - ay) / step);
+    for (let k = 1; k < parts; k++) {
+      const t = k / parts;
+      out.push(ax + (bx - ax) * t, ay + (by - ay) * t);
+    }
+  }
+  return out;
+}
+
+function rdpRange(pts, first, last, tol2, keep) {
+  const ax = pts[first * 2], ay = pts[first * 2 + 1];
+  const bx = pts[last * 2], by = pts[last * 2 + 1];
+  const dx = bx - ax, dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+
+  let worst = -1, worstD = -1;
+  for (let i = first + 1; i < last; i++) {
+    const px = pts[i * 2], py = pts[i * 2 + 1];
+    let d;
+    if (len2 === 0) {
+      const ex = px - ax, ey = py - ay;
+      d = ex * ex + ey * ey;
+    } else {
+      const cross = (px - ax) * dy - (py - ay) * dx;
+      d = cross * cross / len2;
+    }
+    if (d > worstD) { worstD = d; worst = i; }
+  }
+  if (worstD > tol2) {
+    rdpRange(pts, first, worst, tol2, keep);
+    keep[worst] = 1;
+    rdpRange(pts, worst, last, tol2, keep);
+  }
+}
+
+// RDP needs two fixed anchors. On a closed loop we take point 0 and whichever
+// point is farthest from it, which puts both anchors on real extremes of the
+// shape rather than at an arbitrary seam. Returns indices into `pts`, so the
+// caller can still reach the dense points between two simplified vertices.
+function simplifyIndices(pts, tol) {
+  const count = pts.length / 2;
+  if (count < 4) return pts;
+
+  let far = 0, farD = -1;
+  for (let i = 1; i < count; i++) {
+    const dx = pts[i * 2] - pts[0], dy = pts[i * 2 + 1] - pts[1];
+    const d = dx * dx + dy * dy;
+    if (d > farD) { farD = d; far = i; }
+  }
+
+  const keep = new Uint8Array(count);
+  keep[0] = 1; keep[far] = 1;
+  const tol2 = tol * tol;
+  rdpRange(pts, 0, far, tol2, keep);
+
+  // Second arc wraps past the end, so walk it on a rotated copy.
+  const tailLen = count - far + 1;
+  const tail = new Float64Array(tailLen * 2);
+  for (let i = 0; i < tailLen; i++) {
+    const src = (far + i) % count;
+    tail[i * 2] = pts[src * 2];
+    tail[i * 2 + 1] = pts[src * 2 + 1];
+  }
+  const tailKeep = new Uint8Array(tailLen);
+  rdpRange(tail, 0, tailLen - 1, tol2, tailKeep);
+  for (let i = 1; i < tailLen - 1; i++) if (tailKeep[i]) keep[(far + i) % count] = 1;
+
+  const idx = [];
+  for (let i = 0; i < count; i++) if (keep[i]) idx.push(i);
+  return idx;
+}
+
+// Same thing, as coordinates. Kept because the polygon output path and the
+// tests both want the points rather than the indices.
+function simplifyClosed(pts, tol) {
+  const idx = simplifyIndices(pts, tol);
+  const out = [];
+  for (const i of idx) out.push(pts[i * 2], pts[i * 2 + 1]);
+  return out;
+}
+
+// Angle between the incoming and outgoing legs at each vertex. A big turn is
+// a real corner and must survive curve fitting; a small one is just curvature.
+function findCorners(pts, cornerDeg) {
+  const count = pts.length / 2;
+  // cos of the angle between the two leg *directions*: 1 is straight ahead,
+  // 0 is a square turn. A turn sharper than cornerDeg has a smaller cosine.
+  const limit = Math.cos(cornerDeg * Math.PI / 180);
+  const corners = [];
+  for (let i = 0; i < count; i++) {
+    const p = (i - 1 + count) % count, q = (i + 1) % count;
+    const ax = pts[i * 2] - pts[p * 2], ay = pts[i * 2 + 1] - pts[p * 2 + 1];
+    const bx = pts[q * 2] - pts[i * 2], by = pts[q * 2 + 1] - pts[i * 2 + 1];
+    const la = Math.hypot(ax, ay), lb = Math.hypot(bx, by);
+    if (la === 0 || lb === 0) continue;
+    const cos = (ax * bx + ay * by) / (la * lb);
+    if (cos < limit) corners.push(i);
+  }
+  return corners;
+}
+
+/* ==========================================================================
+   4. Curve fitting — Schneider's algorithm.
+
+   Least-squares cubic fit, refined by Newton-Raphson reparameterisation,
+   subdividing wherever the fit is still outside tolerance.
+   ========================================================================== */
+
+function vnorm(v) {
+  const l = Math.hypot(v[0], v[1]);
+  return l === 0 ? [0, 0] : [v[0] / l, v[1] / l];
+}
+
+function B0(u) { const t = 1 - u; return t * t * t; }
+function B1(u) { const t = 1 - u; return 3 * u * t * t; }
+function B2(u) { const t = 1 - u; return 3 * u * u * t; }
+function B3(u) { return u * u * u; }
+
+function bezierAt(bez, u) {
+  const b0 = B0(u), b1 = B1(u), b2 = B2(u), b3 = B3(u);
+  return [
+    bez[0][0] * b0 + bez[1][0] * b1 + bez[2][0] * b2 + bez[3][0] * b3,
+    bez[0][1] * b0 + bez[1][1] * b1 + bez[2][1] * b2 + bez[3][1] * b3,
+  ];
+}
+
+function chordParams(pts) {
+  const u = [0];
+  for (let i = 1; i < pts.length; i++) {
+    u.push(u[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
+  }
+  const total = u[u.length - 1];
+  if (total === 0) return pts.map((_, i) => i / (pts.length - 1));
+  return u.map(v => v / total);
+}
+
+// How far a ray from p along unit t can travel before leaving the box.
+function rayExit(p, t, bb) {
+  let m = Infinity;
+  if (t[0] > 1e-9) m = Math.min(m, (bb[2] - p[0]) / t[0]);
+  else if (t[0] < -1e-9) m = Math.min(m, (bb[0] - p[0]) / t[0]);
+  if (t[1] > 1e-9) m = Math.min(m, (bb[3] - p[1]) / t[1]);
+  else if (t[1] < -1e-9) m = Math.min(m, (bb[1] - p[1]) / t[1]);
+  return Math.max(0, m);
+}
+
+function generateBezier(pts, u, t1, t2, tol) {
+  const first = pts[0], last = pts[pts.length - 1];
+  let c00 = 0, c01 = 0, c11 = 0, x0 = 0, x1 = 0;
+
+  for (let i = 0; i < pts.length; i++) {
+    const a1 = [t1[0] * B1(u[i]), t1[1] * B1(u[i])];
+    const a2 = [t2[0] * B2(u[i]), t2[1] * B2(u[i])];
+    c00 += a1[0] * a1[0] + a1[1] * a1[1];
+    c01 += a1[0] * a2[0] + a1[1] * a2[1];
+    c11 += a2[0] * a2[0] + a2[1] * a2[1];
+    const base = B0(u[i]) + B1(u[i]), baseEnd = B2(u[i]) + B3(u[i]);
+    const tmp = [
+      pts[i][0] - (first[0] * base + last[0] * baseEnd),
+      pts[i][1] - (first[1] * base + last[1] * baseEnd),
+    ];
+    x0 += a1[0] * tmp[0] + a1[1] * tmp[1];
+    x1 += a2[0] * tmp[0] + a2[1] * tmp[1];
+  }
+
+  const det = c00 * c11 - c01 * c01;
+  let alpha1, alpha2;
+  if (Math.abs(det) < 1e-12) {
+    alpha1 = alpha2 = 0;
+  } else {
+    alpha1 = (x0 * c11 - x1 * c01) / det;
+    alpha2 = (c00 * x1 - c01 * x0) / det;
+  }
+
+  // Guard rails on the least-squares result. Negative or vanishing tangents
+  // are the classic degenerate case; an over-long one is just as bad and is
+  // usually missed — it throws a control point far outside the shape and
+  // puts a loop in the curve. A real fit never needs much more than the
+  // chord length (a semicircle wants about 0.27 of it), so anything past
+  // that is a runaway. Either way, fall back to Wu/Barsky's thirds.
+  let seg = Math.hypot(last[0] - first[0], last[1] - first[1]);
+  if (seg < 1e-9) {
+    // Closed loop fitted seam to seam: the chord is zero, so size the
+    // fallback off how far the points actually stray from the endpoint.
+    for (const p of pts) seg = Math.max(seg, Math.hypot(p[0] - first[0], p[1] - first[1]));
+  }
+  if (!(alpha1 > 1e-6) || !(alpha2 > 1e-6) || alpha1 > seg || alpha2 > seg) {
+    alpha1 = alpha2 = seg / 3;
+  }
+
+  // Even a well-behaved alpha can throw a control point far outside the run
+  // of points being fitted, which puts a big bulge in the outline. That
+  // happens wherever a genuinely sharp turn sits just under the corner
+  // threshold and gets fitted as a curve. Confine both control points to the
+  // bounding box of the input, opened up by the fit tolerance: a real curve
+  // never needs to leave it, and a runaway always does.
+  let bx0 = Infinity, by0 = Infinity, bx1 = -Infinity, by1 = -Infinity;
+  for (const p of pts) {
+    if (p[0] < bx0) bx0 = p[0]; if (p[0] > bx1) bx1 = p[0];
+    if (p[1] < by0) by0 = p[1]; if (p[1] > by1) by1 = p[1];
+  }
+  const pad = Math.max(1, tol || 0);
+  const bb = [bx0 - pad, by0 - pad, bx1 + pad, by1 + pad];
+  alpha1 = Math.min(alpha1, rayExit(first, t1, bb));
+  alpha2 = Math.min(alpha2, rayExit(last, t2, bb));
+
+  return [
+    first,
+    [first[0] + t1[0] * alpha1, first[1] + t1[1] * alpha1],
+    [last[0] + t2[0] * alpha2, last[1] + t2[1] * alpha2],
+    last,
+  ];
+}
+
+function maxError(pts, bez, u) {
+  let maxD = 0, split = Math.floor(pts.length / 2);
+  for (let i = 1; i < pts.length - 1; i++) {
+    const p = bezierAt(bez, u[i]);
+    const dx = p[0] - pts[i][0], dy = p[1] - pts[i][1];
+    const d = dx * dx + dy * dy;
+    if (d > maxD) { maxD = d; split = i; }
+  }
+  return { error: maxD, split: split };
+}
+
+function reparam(pts, bez, u) {
+  return u.map((ui, i) => {
+    const p = bezierAt(bez, ui);
+    // First and second derivatives of the cubic at ui.
+    const d1 = [0, 0], d2 = [0, 0];
+    for (let k = 0; k < 2; k++) {
+      const q0 = 3 * (bez[1][k] - bez[0][k]);
+      const q1 = 3 * (bez[2][k] - bez[1][k]);
+      const q2 = 3 * (bez[3][k] - bez[2][k]);
+      d1[k] = q0 * (1 - ui) * (1 - ui) + 2 * q1 * (1 - ui) * ui + q2 * ui * ui;
+      d2[k] = 2 * (q1 - q0) * (1 - ui) + 2 * (q2 - q1) * ui;
+    }
+    const dx = p[0] - pts[i][0], dy = p[1] - pts[i][1];
+    const num = dx * d1[0] + dy * d1[1];
+    const den = d1[0] * d1[0] + d1[1] * d1[1] + dx * d2[0] + dy * d2[1];
+    if (Math.abs(den) < 1e-12) return ui;
+    return ui - num / den;
+  });
+}
+
+function fitCubic(pts, t1, t2, tol, out, depth) {
+  if (pts.length === 2) {
+    const dist = Math.hypot(pts[1][0] - pts[0][0], pts[1][1] - pts[0][1]) / 3;
+    out.push([
+      pts[0],
+      [pts[0][0] + t1[0] * dist, pts[0][1] + t1[1] * dist],
+      [pts[1][0] + t2[0] * dist, pts[1][1] + t2[1] * dist],
+      pts[1],
+    ]);
+    return;
+  }
+
+  let u = chordParams(pts);
+  let bez = generateBezier(pts, u, t1, t2, tol);
+  let { error, split } = maxError(pts, bez, u);
+
+  if (error < tol * tol) { out.push(bez); return; }
+
+  // Close but not close enough: reparameterising usually pulls it in, and is
+  // far cheaper than splitting into two more curves.
+  if (error < tol * tol * 16 && depth < 24) {
+    for (let i = 0; i < 4; i++) {
+      const u2 = reparam(pts, bez, u);
+      const bez2 = generateBezier(pts, u2, t1, t2, tol);
+      const r = maxError(pts, bez2, u2);
+      if (r.error >= error) break;
+      u = u2; bez = bez2; error = r.error; split = r.split;
+      if (error < tol * tol) { out.push(bez); return; }
+    }
+  }
+
+  if (depth > 24 || split <= 0 || split >= pts.length - 1) { out.push(bez); return; }
+
+  const centre = vnorm([
+    pts[split - 1][0] - pts[split + 1][0],
+    pts[split - 1][1] - pts[split + 1][1],
+  ]);
+  fitCubic(pts.slice(0, split + 1), t1, centre, tol, out, depth + 1);
+  fitCubic(pts.slice(split), [-centre[0], -centre[1]], t2, tol, out, depth + 1);
+}
+
+/* Turn one traced contour into a list of path segments.
+
+   The simplified polygon decides *where the corners are*; the curves are then
+   fitted to the dense original contour. Fitting to the simplified points
+   instead looks equivalent and is not: the error is only ever measured at the
+   points you hand the fitter, so a curve can pass within tolerance of every
+   simplified vertex and still bow far outside the shape between them. Against
+   the dense outline there is nowhere for it to hide. */
+function fitContour(dense, idx, cornerDeg, smooth) {
+  const nDense = dense.length / 2;
+  const poly = [];
+  for (const i of idx) poly.push(dense[i * 2], dense[i * 2 + 1]);
+  const nPoly = poly.length / 2;
+
+  const P = [];
+  for (let i = 0; i < nPoly; i++) P.push([poly[i * 2], poly[i * 2 + 1]]);
+
+  if (smooth <= 0) {
+    return { start: P[0], segs: P.slice(1).map(p => ({ t: 'L', p: p })) };
+  }
+
+  // Walk the dense contour from index a to index b, wrapping if needed.
+  function denseRun(a, b) {
+    const seq = [];
+    let i = a;
+    for (;;) {
+      seq.push([dense[i * 2], dense[i * 2 + 1]]);
+      if (i === b && seq.length > 1) break;
+      i = (i + 1) % nDense;
+      if (seq.length > nDense) break;
+    }
+    return seq;
+  }
+
+  // A single lattice step is always axis-aligned, so the direction of the
+  // first step out of a corner says nothing useful about a 45-degree edge.
+  // Average a few steps instead.
+  function endTangent(seq, fromStart) {
+    const k = Math.min(4, seq.length - 1);
+    const a = fromStart ? seq[0] : seq[seq.length - 1];
+    const b = fromStart ? seq[k] : seq[seq.length - 1 - k];
+    return vnorm([b[0] - a[0], b[1] - a[1]]);
+  }
+
+  const corners = findCorners(poly, cornerDeg);
+  const beziers = [];
+
+  if (corners.length === 0) {
+    // Fully smooth loop: fit it as one run, seam to seam, with the centred
+    // tangent at the seam so the join is not a visible kink.
+    const seam = idx[0];
+    const seq = denseRun(seam, seam);
+    const ahead = seq[Math.min(4, seq.length - 1)];
+    const behind = seq[Math.max(0, seq.length - 1 - 4)];
+    const t = vnorm([ahead[0] - behind[0], ahead[1] - behind[1]]);
+    fitCubic(seq, t, [-t[0], -t[1]], smooth, beziers, 0);
+  } else {
+    for (let c = 0; c < corners.length; c++) {
+      const a = idx[corners[c]];
+      const b = idx[corners[(c + 1) % corners.length]];
+      const seq = denseRun(a, b);
+      if (seq.length < 2) continue;
+      fitCubic(seq, endTangent(seq, true), endTangent(seq, false), smooth, beziers, 0);
+    }
+  }
+
+  if (!beziers.length) {
+    return { start: P[0], segs: P.slice(1).map(p => ({ t: 'L', p: p })) };
+  }
+
+  const segs = [];
+  for (const b of beziers) segs.push({ t: 'C', p1: b[1], p2: b[2], p: b[3] });
+  return { start: beziers[0][0], segs: segs };
+}
+
+/* ==========================================================================
+   5. Top level — image in, layered path geometry out.
+   ========================================================================== */
+
+function trace(img, options) {
+  const opts = Object.assign({
+    mode: 'bw',          // 'bw' | 'gray' | 'colour'
+    threshold: 128,
+    invert: false,
+    inkColor: [0, 0, 0],
+    levels: 4,
+    colors: 8,
+    turdSize: 4,         // drop regions smaller than this many pixels
+    simplify: 0.8,       // RDP tolerance, pixels
+    smooth: 1.0,         // Bezier fit tolerance, pixels; 0 keeps polygons
+    cornerDeg: 60,       // turn sharper than this stays a hard corner
+    dropBackground: false,
+  }, options || {});
+
+  const w = img.width, h = img.height;
+  const seg = segment(img, opts);
+  const layers = [];
+  const startAt = (opts.dropBackground && seg.cumulative && seg.palette.length > 1) ? 1 : 0;
+
+  for (let li = startAt; li < seg.palette.length; li++) {
+    const index = seg.index;
+    const inside = seg.cumulative
+      ? function (x, y) { return index[y * w + x] >= li; }
+      : function (x, y) { return index[y * w + x] === li; };
+
+    const contours = traceMask(inside, w, h, opts.turdSize);
+    if (!contours.length) continue;
+
+    const paths = [];
+    for (const c of contours) {
+      // Resample before simplifying: the added points are collinear with the
+      // originals, so RDP discards them and the corner structure is
+      // unchanged, but the curve fitter gets a properly sampled outline.
+      const dense = opts.smooth > 0 ? densify(c.pts, 2) : c.pts;
+      const idx = simplifyIndices(dense, opts.simplify);
+      if (idx.length < 3) continue;
+      paths.push(fitContour(dense, idx, opts.cornerDeg, opts.smooth));
+    }
+    if (!paths.length) continue;
+    layers.push({ color: seg.palette[li], paths: paths });
+  }
+
+  let nodes = 0;
+  for (const l of layers) for (const p of l.paths) nodes += p.segs.length;
+  return { width: w, height: h, layers: layers, nodes: nodes, colors: seg.palette.length };
+}
+
+/* ==========================================================================
+   6. Writers. SVG keeps the image's own y-down axis; EPS and DXF are both
+   y-up, so their geometry is mirrored on the way out.
+   ========================================================================== */
+
+function toSVG(doc, opts) {
+  opts = opts || {};
+  const out = [];
+  out.push('<?xml version="1.0" encoding="UTF-8"?>');
+  out.push('<svg xmlns="http://www.w3.org/2000/svg" width="' + doc.width +
+           '" height="' + doc.height + '" viewBox="0 0 ' + doc.width + ' ' + doc.height + '">');
+  if (opts.background) {
+    out.push('<rect width="' + doc.width + '" height="' + doc.height +
+             '" fill="' + opts.background + '"/>');
+  }
+  for (const layer of doc.layers) {
+    const d = [];
+    for (const p of layer.paths) {
+      d.push('M' + n(p.start[0]) + ' ' + n(p.start[1]));
+      for (const s of p.segs) {
+        if (s.t === 'L') d.push('L' + n(s.p[0]) + ' ' + n(s.p[1]));
+        else d.push('C' + n(s.p1[0]) + ' ' + n(s.p1[1]) + ' ' + n(s.p2[0]) + ' ' +
+                    n(s.p2[1]) + ' ' + n(s.p[0]) + ' ' + n(s.p[1]));
+      }
+      d.push('Z');
+    }
+    out.push('<path fill="' + toHex(layer.color) + '" fill-rule="evenodd" d="' +
+             d.join('') + '"/>');
+  }
+  out.push('</svg>');
+  return out.join('\n');
+}
+
+function toEPS(doc) {
+  const H = doc.height;
+  const fy = y => H - y;
+  const out = [];
+  out.push('%!PS-Adobe-3.0 EPSF-3.0');
+  out.push('%%Creator: image-to-vector.slippylabs.com');
+  out.push('%%Title: traced image');
+  out.push('%%BoundingBox: 0 0 ' + Math.ceil(doc.width) + ' ' + Math.ceil(H));
+  out.push('%%HiResBoundingBox: 0 0 ' + n(doc.width) + ' ' + n(H));
+  out.push('%%LanguageLevel: 2');
+  out.push('%%EndComments');
+  out.push('%%BeginProlog');
+  out.push('/m {moveto} bind def');
+  out.push('/c {curveto} bind def');
+  out.push('/h {closepath} bind def');
+  out.push('%%EndProlog');
+  out.push('%%Page: 1 1');
+  out.push('gsave');
+
+  for (const layer of doc.layers) {
+    const c = layer.color;
+    out.push(n(c[0] / 255) + ' ' + n(c[1] / 255) + ' ' + n(c[2] / 255) + ' setrgbcolor');
+    out.push('newpath');
+    for (const p of layer.paths) {
+      out.push(n(p.start[0]) + ' ' + n(fy(p.start[1])) + ' m');
+      let cur = p.start;
+      for (const s of p.segs) {
+        if (s.t === 'L') {
+          // PostScript has lineto, but emitting everything as a curve keeps
+          // one code path and costs nothing at these sizes.
+          const a = [cur[0] + (s.p[0] - cur[0]) / 3, cur[1] + (s.p[1] - cur[1]) / 3];
+          const b = [cur[0] + 2 * (s.p[0] - cur[0]) / 3, cur[1] + 2 * (s.p[1] - cur[1]) / 3];
+          out.push(n(a[0]) + ' ' + n(fy(a[1])) + ' ' + n(b[0]) + ' ' + n(fy(b[1])) + ' ' +
+                   n(s.p[0]) + ' ' + n(fy(s.p[1])) + ' c');
+          cur = s.p;
+        } else {
+          out.push(n(s.p1[0]) + ' ' + n(fy(s.p1[1])) + ' ' + n(s.p2[0]) + ' ' + n(fy(s.p2[1])) +
+                   ' ' + n(s.p[0]) + ' ' + n(fy(s.p[1])) + ' c');
+          cur = s.p;
+        }
+      }
+      out.push('h');
+    }
+    out.push('eofill');
+  }
+
+  out.push('grestore');
+  out.push('showpage');
+  out.push('%%EOF');
+  return out.join('\n');
+}
+
+/* Flatten a cubic to line segments, subdividing until it is flat to `tol`. */
+function flattenCubic(p0, p1, p2, p3, tol, out, depth) {
+  // Distance of the control points from the chord bounds the error.
+  const dx = p3[0] - p0[0], dy = p3[1] - p0[1];
+  let d1 = Math.abs((p1[0] - p3[0]) * dy - (p1[1] - p3[1]) * dx);
+  let d2 = Math.abs((p2[0] - p3[0]) * dy - (p2[1] - p3[1]) * dx);
+  const sum = (d1 + d2) * (d1 + d2);
+  if (depth > 16 || sum < tol * tol * (dx * dx + dy * dy)) {
+    out.push(p3);
+    return;
+  }
+  const mid = (a, b) => [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+  const p01 = mid(p0, p1), p12 = mid(p1, p2), p23 = mid(p2, p3);
+  const p012 = mid(p01, p12), p123 = mid(p12, p23);
+  const m = mid(p012, p123);
+  flattenCubic(p0, p01, p012, m, tol, out, depth + 1);
+  flattenCubic(m, p123, p23, p3, tol, out, depth + 1);
+}
+
+function pathToPolyline(p, tol) {
+  const pts = [p.start];
+  let cur = p.start;
+  for (const s of p.segs) {
+    if (s.t === 'L') { pts.push(s.p); cur = s.p; }
+    else { flattenCubic(cur, s.p1, s.p2, s.p, tol, pts, 0); cur = s.p; }
+  }
+  return pts;
+}
+
+/* Every cubic in the path as an explicit 4-point Bezier, which is what the
+   SPLINE writer needs. */
+function pathToBeziers(p) {
+  const list = [];
+  let cur = p.start;
+  for (const s of p.segs) {
+    if (s.t === 'L') {
+      list.push([cur,
+                 [cur[0] + (s.p[0] - cur[0]) / 3, cur[1] + (s.p[1] - cur[1]) / 3],
+                 [cur[0] + 2 * (s.p[0] - cur[0]) / 3, cur[1] + 2 * (s.p[1] - cur[1]) / 3],
+                 s.p]);
+    } else {
+      list.push([cur, s.p1, s.p2, s.p]);
+    }
+    cur = s.p;
+  }
+  // Close the loop back to the start if the fit did not land exactly there.
+  if (Math.hypot(cur[0] - p.start[0], cur[1] - p.start[1]) > 1e-9) {
+    list.push([cur,
+               [cur[0] + (p.start[0] - cur[0]) / 3, cur[1] + (p.start[1] - cur[1]) / 3],
+               [cur[0] + 2 * (p.start[0] - cur[0]) / 3, cur[1] + 2 * (p.start[1] - cur[1]) / 3],
+               p.start]);
+  }
+  return list;
+}
+
+function toDXF(doc, opts) {
+  opts = opts || {};
+  const useSplines = !!opts.splines;
+  const flatTol = opts.flatten || 0.2;
+  const H = doc.height;
+  const fy = y => H - y;
+
+  const out = [];
+  let handle = 0x100;
+  const nextHandle = () => (handle++).toString(16).toUpperCase();
+  const g = (code, value) => { out.push(String(code)); out.push(String(value)); };
+
+  const layerNames = doc.layers.map((l, i) => 'COLOR_' + i + '_' + toHex(l.color).slice(1).toUpperCase());
+
+  g(0, 'SECTION'); g(2, 'HEADER');
+  g(9, '$ACADVER'); g(1, 'AC1015');
+  g(9, '$INSUNITS'); g(70, 0);
+  g(9, '$EXTMIN'); g(10, 0); g(20, 0); g(30, 0);
+  g(9, '$EXTMAX'); g(10, n(doc.width)); g(20, n(H)); g(30, 0);
+  g(0, 'ENDSEC');
+
+  g(0, 'SECTION'); g(2, 'TABLES');
+
+  g(0, 'TABLE'); g(2, 'LTYPE'); g(5, nextHandle());
+  g(100, 'AcDbSymbolTable'); g(70, 1);
+  g(0, 'LTYPE'); g(5, nextHandle());
+  g(100, 'AcDbSymbolTableRecord'); g(100, 'AcDbLinetypeTableRecord');
+  g(2, 'CONTINUOUS'); g(70, 0); g(3, 'Solid line'); g(72, 65); g(73, 0); g(40, 0);
+  g(0, 'ENDTAB');
+
+  g(0, 'TABLE'); g(2, 'LAYER'); g(5, nextHandle());
+  g(100, 'AcDbSymbolTable'); g(70, layerNames.length + 1);
+  g(0, 'LAYER'); g(5, nextHandle());
+  g(100, 'AcDbSymbolTableRecord'); g(100, 'AcDbLayerTableRecord');
+  g(2, '0'); g(70, 0); g(62, 7); g(6, 'CONTINUOUS');
+  doc.layers.forEach((layer, i) => {
+    const c = layer.color;
+    g(0, 'LAYER'); g(5, nextHandle());
+    g(100, 'AcDbSymbolTableRecord'); g(100, 'AcDbLayerTableRecord');
+    g(2, layerNames[i]); g(70, 0); g(62, 7);
+    g(420, (c[0] << 16) | (c[1] << 8) | c[2]);
+    g(6, 'CONTINUOUS');
+  });
+  g(0, 'ENDTAB');
+
+  g(0, 'ENDSEC');
+
+  g(0, 'SECTION'); g(2, 'BLOCKS'); g(0, 'ENDSEC');
+
+  g(0, 'SECTION'); g(2, 'ENTITIES');
+  doc.layers.forEach((layer, li) => {
+    for (const p of layer.paths) {
+      if (useSplines) {
+        const bez = pathToBeziers(p);
+        // A chain of cubics is exactly a degree-3 B-spline whose interior
+        // knots each repeat 3 times: 3n+1 control points, 3n+5 knots.
+        const ctrl = [bez[0][0]];
+        for (const b of bez) ctrl.push(b[1], b[2], b[3]);
+        const nSeg = bez.length;
+        g(0, 'SPLINE'); g(5, nextHandle());
+        g(100, 'AcDbEntity'); g(8, layerNames[li]);
+        g(100, 'AcDbSpline');
+        g(70, 8);                       // planar
+        g(71, 3);                       // degree
+        g(72, 3 * nSeg + 5);            // knot count
+        g(73, ctrl.length);             // control point count
+        g(74, 0);                       // no fit points
+        for (let k = 0; k < 4; k++) g(40, 0);
+        for (let i = 1; i < nSeg; i++) for (let k = 0; k < 3; k++) g(40, i);
+        for (let k = 0; k < 4; k++) g(40, nSeg);
+        for (const c of ctrl) { g(10, n(c[0])); g(20, n(fy(c[1]))); g(30, 0); }
+      } else {
+        const pts = pathToPolyline(p, flatTol);
+        g(0, 'LWPOLYLINE'); g(5, nextHandle());
+        g(100, 'AcDbEntity'); g(8, layerNames[li]);
+        g(100, 'AcDbPolyline');
+        g(90, pts.length); g(70, 1);    // closed
+        for (const c of pts) { g(10, n(c[0])); g(20, n(fy(c[1]))); }
+      }
+    }
+  });
+  g(0, 'ENDSEC');
+
+  g(0, 'EOF');
+  return out.join('\n') + '\n';
+}
+
+root.Vectorize = {
+  trace: trace,
+  segment: segment,
+  medianCut: medianCut,
+  traceMask: traceMask,
+  simplifyClosed: simplifyClosed,
+  simplifyIndices: simplifyIndices,
+  densify: densify,
+  fitContour: fitContour,
+  toSVG: toSVG,
+  toEPS: toEPS,
+  toDXF: toDXF,
+  pathToPolyline: pathToPolyline,
+};
+
+})(typeof globalThis !== 'undefined' ? globalThis : this);
+
+if (typeof module !== 'undefined' && module.exports) module.exports = globalThis.Vectorize;
+</script>
+
+<script>
+/* ---------------------------------------------------------------------------
+   Page glue: gather options, hand the pixels to a worker, show what comes back.
+   All the real geometry lives in the #vectorize-src block above.
+   --------------------------------------------------------------------------- */
+
+const $ = id => document.getElementById(id);
+const statusLine = $('status-line');
+const srcCanvas = $('src-canvas');
+const outImg = $('out-img');
+
+let mode = 'colour';
+let sourceData = null;      // ImageData actually being traced
+let sourceSize = null;      // [w, h] of the original file, for reporting
+let traceToken = 0;         // guards against a slow trace landing after a newer one
+let lastSVG = '';
+let lastOutURL = null;
+let worker = null;
+let inlineVectorize = null; // fallback when Workers are unavailable
+
+function status(msg, isError) {
+  statusLine.textContent = msg;
+  statusLine.classList.toggle('error-text', !!isError);
+}
+
+/* ---------- worker setup, with a same-thread fallback ---------- */
+
+const WORKER_GLUE = `
+self.onmessage = function (e) {
+  var m = e.data;
+  try {
+    if (m.cmd === 'trace') {
+      var img = { width: m.width, height: m.height, data: new Uint8ClampedArray(m.data) };
+      var t0 = Date.now();
+      self.__doc = Vectorize.trace(img, m.opts);
+      var svg = Vectorize.toSVG(self.__doc, { background: m.background });
+      var paths = 0;
+      for (var i = 0; i < self.__doc.layers.length; i++) paths += self.__doc.layers[i].paths.length;
+      self.postMessage({ cmd: 'traced', token: m.token, svg: svg, ms: Date.now() - t0,
+                         paths: paths, nodes: self.__doc.nodes, layers: self.__doc.layers.length });
+    } else if (m.cmd === 'export') {
+      if (!self.__doc) { self.postMessage({ cmd: 'error', message: 'Nothing traced yet.' }); return; }
+      var text = m.format === 'eps'
+        ? Vectorize.toEPS(self.__doc)
+        : Vectorize.toDXF(self.__doc, { splines: m.splines, flatten: m.flatten });
+      self.postMessage({ cmd: 'exported', format: m.format, text: text });
+    }
+  } catch (err) {
+    self.postMessage({ cmd: 'error', message: String(err && err.message || err) });
+  }
+};
+`;
+
+function startWorker() {
+  const src = $('vectorize-src').textContent;
+  try {
+    const blob = new Blob([src + WORKER_GLUE], { type: 'text/javascript' });
+    const w = new Worker(URL.createObjectURL(blob));
+    w.onmessage = onWorkerMessage;
+    w.onerror = () => { worker = null; useInline(src); };
+    return w;
+  } catch (err) {
+    useInline(src);
+    return null;
+  }
+}
+
+// No Worker (or it failed to start): run the same code on this thread. The
+// page will hitch on a big trace, but it still works.
+function useInline(src) {
+  if (inlineVectorize) return;
+  (0, eval)(src);
+  inlineVectorize = window.Vectorize;
+}
+
+function onWorkerMessage(e) {
+  const m = e.data;
+  if (m.cmd === 'traced') {
+    if (m.token !== traceToken) return;   // a newer trace already started
+    showResult(m);
+  } else if (m.cmd === 'exported') {
+    saveText(m.text, m.format);
+  } else if (m.cmd === 'error') {
+    status('Trace failed: ' + m.message, true);
+  }
+}
+
+/* ---------- options ---------- */
+
+function currentOpts() {
+  return {
+    mode: mode,
+    threshold: +$('threshold').value,
+    invert: $('invert').checked,
+    inkColor: hexToRGB($('ink').value),
+    levels: +$('levels').value,
+    colors: +$('colors').value,
+    turdSize: +$('turd').value,
+    simplify: +$('simplify').value / 10,
+    smooth: +$('smooth').value / 10,
+    cornerDeg: +$('corner').value,
+    dropBackground: $('drop-bg').checked,
+  };
+}
+
+function hexToRGB(hex) {
+  return [parseInt(hex.slice(1, 3), 16), parseInt(hex.slice(3, 5), 16), parseInt(hex.slice(5, 7), 16)];
+}
+
+/* ---------- source image ---------- */
+
+function setSource(drawable, natW, natH) {
+  const maxSize = +$('maxsize').value;
+  let w = natW, h = natH;
+  if (maxSize > 0 && Math.max(w, h) > maxSize) {
+    const k = maxSize / Math.max(w, h);
+    w = Math.max(1, Math.round(w * k));
+    h = Math.max(1, Math.round(h * k));
+  }
+  srcCanvas.width = w;
+  srcCanvas.height = h;
+  const g = srcCanvas.getContext('2d', { willReadFrequently: true });
+  g.clearRect(0, 0, w, h);
+  g.drawImage(drawable, 0, 0, w, h);
+  sourceData = g.getImageData(0, 0, w, h);
+  sourceSize = [natW, natH];
+  applyZoom();
+  retrace();
+}
+
+let sourceDrawable = null;
+
+function loadFile(file) {
+  const url = URL.createObjectURL(file);
+  const img = new Image();
+  img.onload = function () {
+    sourceDrawable = img;
+    setSource(img, img.naturalWidth, img.naturalHeight);
+    URL.revokeObjectURL(url);
+  };
+  img.onerror = function () {
+    URL.revokeObjectURL(url);
+    status('Could not read that file as an image.', true);
+  };
+  img.src = url;
+}
+
+// Something with curves, hard corners, a hole and a handful of flat colours,
+// so every part of the pipeline has something to chew on from the first load.
+function buildTestPattern() {
+  const c = document.createElement('canvas');
+  c.width = 480; c.height = 480;
+  const g = c.getContext('2d');
+  g.fillStyle = '#f2f7f4';
+  g.fillRect(0, 0, 480, 480);
+
+  g.save();
+  g.translate(240, 250);
+  g.scale(6.2, 6.2);
+  g.translate(-32, -32);
+
+  function circle(x, y, r, fill, stroke) {
+    g.beginPath();
+    g.arc(x, y, r, 0, Math.PI * 2);
+    g.fillStyle = fill; g.fill();
+    if (stroke) { g.strokeStyle = stroke; g.lineWidth = 2; g.stroke(); }
+  }
+  function ellipse(x, y, rx, ry, fill) {
+    g.beginPath();
+    g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    g.fillStyle = fill; g.fill();
+  }
+
+  circle(32, 34, 22, '#1c8a52', '#39ff8f');
+  circle(20, 16, 8, '#1c8a52', '#39ff8f');
+  circle(44, 16, 8, '#1c8a52', '#39ff8f');
+  circle(20, 16, 3.5, '#050b10');
+  circle(44, 16, 3.5, '#050b10');
+  ellipse(24, 32, 4.5, 5.5, '#050b10');
+  ellipse(40, 32, 4.5, 5.5, '#050b10');
+  circle(24, 30, 1.4, '#39ff8f');
+  circle(40, 30, 1.4, '#39ff8f');
+  g.beginPath();
+  g.moveTo(22, 42); g.quadraticCurveTo(32, 48, 42, 42);
+  g.strokeStyle = '#050b10'; g.lineWidth = 2; g.lineCap = 'round'; g.stroke();
+  g.restore();
+
+  // A ring and a triangle: a hole to fill and three corners to keep sharp.
+  g.fillStyle = '#ff9130';
+  g.beginPath();
+  g.arc(70, 70, 44, 0, Math.PI * 2);
+  g.arc(70, 70, 22, 0, Math.PI * 2, true);
+  g.fill('evenodd');
+
+  g.fillStyle = '#ff4655';
+  g.beginPath();
+  g.moveTo(410, 26); g.lineTo(462, 118); g.lineTo(358, 118); g.closePath();
+  g.fill();
+
+  return c;
+}
+
+/* ---------- tracing ---------- */
+
+let retraceTimer = null;
+
+function retrace() {
+  if (!sourceData) return;
+  clearTimeout(retraceTimer);
+  // Sliders fire continuously; only trace once the user pauses.
+  retraceTimer = setTimeout(runTrace, 140);
+}
+
+function runTrace() {
+  if (!sourceData) return;
+  const token = ++traceToken;
+  const opts = currentOpts();
+  const background = $('white-bg').checked ? '#ffffff' : null;
+  status('Tracing…');
+
+  if (worker) {
+    worker.postMessage({
+      cmd: 'trace', token: token,
+      width: sourceData.width, height: sourceData.height,
+      data: sourceData.data.slice().buffer,
+      opts: opts, background: background,
+    }, []);
+    return;
+  }
+
+  // Same-thread fallback.
+  try {
+    const t0 = Date.now();
+    const doc = inlineVectorize.trace(
+      { width: sourceData.width, height: sourceData.height, data: sourceData.data }, opts);
+    window.__doc = doc;
+    const svg = inlineVectorize.toSVG(doc, { background: background });
+    let paths = 0;
+    for (const l of doc.layers) paths += l.paths.length;
+    showResult({ token: token, svg: svg, ms: Date.now() - t0,
+                 paths: paths, nodes: doc.nodes, layers: doc.layers.length });
+  } catch (err) {
+    status('Trace failed: ' + err.message, true);
+  }
+}
+
+function showResult(m) {
+  lastSVG = m.svg;
+  $('svg-src').value = m.svg;
+
+  if (lastOutURL) URL.revokeObjectURL(lastOutURL);
+  lastOutURL = URL.createObjectURL(new Blob([m.svg], { type: 'image/svg+xml' }));
+  outImg.src = lastOutURL;
+
+  $('stat-paths').textContent = m.paths.toLocaleString();
+  $('stat-nodes').textContent = m.nodes.toLocaleString();
+  $('stat-layers').textContent = m.layers.toLocaleString();
+  $('stat-size').textContent = formatBytes(new Blob([m.svg]).size);
+  $('stat-ms').textContent = m.ms + ' ms';
+  applyZoom();
+
+  const src = sourceSize ? sourceSize[0] + '×' + sourceSize[1] : '';
+  const traced = sourceData.width + '×' + sourceData.height;
+  status('Traced ' + traced + (src && src !== traced ? ' (from ' + src + ')' : '') +
+         ' — ' + m.paths + ' path' + (m.paths === 1 ? '' : 's') + ', ' +
+         m.nodes + ' node' + (m.nodes === 1 ? '' : 's') + '. Scalable to any size.');
+}
+
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' kB';
+  return (b / 1048576).toFixed(2) + ' MB';
+}
+
+/* ---------- zoom ---------- */
+
+function applyZoom() {
+  if (!sourceData) return;
+  const k = +$('zoom').value / 10;
+  const w = Math.round(sourceData.width * k);
+  const h = Math.round(sourceData.height * k);
+  srcCanvas.style.width = w + 'px';
+  srcCanvas.style.height = h + 'px';
+  outImg.style.width = w + 'px';
+  outImg.style.height = h + 'px';
+}
+
+/* ---------- downloads ---------- */
+
+function saveText(text, ext) {
+  const mime = ext === 'svg' ? 'image/svg+xml'
+             : ext === 'eps' ? 'application/postscript'
+             : 'image/vnd.dxf';
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'traced.' + ext;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  status('Saved traced.' + ext + ' (' + formatBytes(new Blob([text]).size) + ').');
+}
+
+function requestExport(format) {
+  if (!lastSVG) { status('Nothing traced yet.', true); return; }
+  const payload = {
+    cmd: 'export', format: format,
+    splines: $('dxf-splines').checked,
+    flatten: +$('flatten').value / 100,
+  };
+  if (worker) { worker.postMessage(payload); return; }
+  const doc = window.__doc;
+  saveText(format === 'eps' ? inlineVectorize.toEPS(doc)
+                            : inlineVectorize.toDXF(doc, payload), format);
+}
+
+/* ---------- wiring ---------- */
+
+$('img-input').addEventListener('change', e => {
+  if (e.target.files && e.target.files[0]) loadFile(e.target.files[0]);
+});
+
+$('pattern-btn').addEventListener('click', () => {
+  const c = buildTestPattern();
+  sourceDrawable = c;
+  setSource(c, c.width, c.height);
+});
+
+$('mode-tabs').addEventListener('click', e => {
+  const btn = e.target.closest('.hud-tab');
+  if (!btn) return;
+  mode = btn.dataset.mode;
+  document.querySelectorAll('#mode-tabs .hud-tab')
+    .forEach(b => b.classList.toggle('active', b === btn));
+  $('panel-bw').classList.toggle('hidden', mode !== 'bw');
+  $('panel-gray').classList.toggle('hidden', mode !== 'gray');
+  $('panel-colour').classList.toggle('hidden', mode !== 'colour');
+  retrace();
+});
+
+// Sliders that carry a live label, and the divisor needed to show it.
+const LABELLED = {
+  threshold: 1, levels: 1, colors: 1, turd: 1, corner: 1,
+  simplify: 10, smooth: 10, zoom: 10, flatten: 100,
+};
+for (const id of Object.keys(LABELLED)) {
+  const el = $(id);
+  const label = $(id + '-val');
+  const div = LABELLED[id];
+  const render = () => {
+    const v = +el.value / div;
+    label.textContent = div === 1 ? String(v) : v.toFixed(div === 100 ? 2 : 1);
+  };
+  render();
+  el.addEventListener('input', () => {
+    render();
+    if (id === 'zoom') applyZoom();
+    else if (id !== 'flatten') retrace();
+  });
+}
+
+['invert', 'drop-bg', 'white-bg'].forEach(id => $(id).addEventListener('change', retrace));
+$('ink').addEventListener('input', retrace);
+$('maxsize').addEventListener('change', () => {
+  if (sourceDrawable) {
+    const w = sourceDrawable.naturalWidth || sourceDrawable.width;
+    const h = sourceDrawable.naturalHeight || sourceDrawable.height;
+    setSource(sourceDrawable, w, h);
+  }
+});
+
+$('svg-btn').addEventListener('click', () => {
+  if (!lastSVG) { status('Nothing traced yet.', true); return; }
+  saveText(lastSVG, 'svg');
+});
+$('eps-btn').addEventListener('click', () => requestExport('eps'));
+$('dxf-btn').addEventListener('click', () => requestExport('dxf'));
+$('copy-btn').addEventListener('click', () => {
+  if (!lastSVG) { status('Nothing traced yet.', true); return; }
+  navigator.clipboard.writeText(lastSVG)
+    .then(() => status('SVG source copied to the clipboard.'))
+    .catch(() => {
+      $('svg-src').select();
+      status('Press Ctrl+C to copy the selected SVG source.');
+    });
+});
+
+// Drag and drop anywhere on the panel.
+const panel = document.querySelector('.hud-panel');
+panel.addEventListener('dragover', e => { e.preventDefault(); });
+panel.addEventListener('drop', e => {
+  e.preventDefault();
+  const f = e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+
+worker = startWorker();
+$('pattern-btn').click();
+</script>
+
+</body>
+</html>
