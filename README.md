@@ -2,7 +2,9 @@
 
 Trace a PNG, JPEG or BMP into real scalable geometry and download it as SVG, EPS or DXF. Contour tracing, colour quantisation and Bezier fitting, all in your browser.
 
-**Live:** <https://image-to-vector.slippylabs.com/>
+> **Archived 2026-10-13.** VectorCraft replaced this tool; the old address now
+> redirects to <https://vectorcraft.slippylabs.com/>. The code still runs locally
+> as described below.
 
 ## What it does
 
@@ -28,5 +30,4 @@ Then open <http://localhost:8000>.
 
 ---
 
-Part of [Slippy Labs](https://slippylabs.com). This one is indexed at
-[art.slippylabs.com](https://art.slippylabs.com).
+Part of [Slippy Labs](https://slippylabs.com).
